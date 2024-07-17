@@ -6,6 +6,7 @@ import { message, Row, Col, Input } from "antd";
 import { useNavigate } from "react-router-dom";
 import { SearchOutlined } from "@ant-design/icons";
 import moment from "moment";
+import axios from 'axios';
 
 const Home = () => {
   const [movies, setMovies] = useState(null);
@@ -15,6 +16,18 @@ const Home = () => {
 
   const getData = async () => {
     try {
+      const user = await axios.get("/api/users/get-current-user",{
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if(user.data.data.role === "partner" || user.data.data.role === "admin"){
+        navigate("/partner");
+        message.error("You are not allowed to access this page");
+      }
+      else{}
+
       dispatch(showLoading());
       const response = await getAllMovies();
       if (response.success) {
@@ -23,6 +36,7 @@ const Home = () => {
         message.error(response.message);
       }
       dispatch(hideLoading());
+
     } catch (err) {
       message.error(err.message);
       dispatch(hideLoading());
